@@ -81,7 +81,11 @@ def create_events(day, formatted_date, rows, csvLength, service, calendar_id):
 						}
 					}
 			c_event = service.events().insert(calendarId=calendar_id, body=event).execute()
-			print('Event created. Class: {} Day: {}'.format(rows[a]["Class"], day))
+			
+			if not c_event:
+				print("Error creating event")
+			else:
+				print('Event created. Class: {} Day: {}'.format(rows[a]["Class"], day))
 
 def main():
 	credentials = get_credentials()
@@ -108,7 +112,11 @@ def main():
 		print("Created Calendar! Name: {} ID: {}".format(calendar_name, calendar_id))
 	else: # Get Calendar
 		calendar = service.calendars().get(calendarId=calendar_id).execute()
-		print("Calendar Exists! Name: {} ID: {}".format(calendar_name, calendar_id))
+		
+		if not calendar:
+			print("Could not retrieve calendar")
+		else:
+			print("Calendar Exists! Name: {} ID: {}".format(calendar_name, calendar_id))
 
 	# Check if program has already been run (events already created)
 	event_list = service.events().list(calendarId=calendar_id).execute()

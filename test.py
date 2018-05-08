@@ -20,4 +20,3 @@ for x in range(1,csvLength):
 			rows[a]["Class"],rows[a]["Start Time"],rows[a]["End Time"])
 		print(event)
 	#print(rows[str(x)]["Class"])
-
