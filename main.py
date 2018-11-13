@@ -8,7 +8,7 @@ from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
 
-import datetime
+import pytz, datetime
 
 try:
 	import argparse
@@ -62,6 +62,10 @@ class AutoSchedule:
 
 		self.schedule_csv = CSV(file_name=schedule_csv_name, start_pos=1)
 		self.zero_csv = CSV(file_name=day_zero_csv_name, start_pos=1)
+
+		self.locale = pytz.timezone("America/Nassau")
+
+		
 
 	# Getter/Setter
 
@@ -138,7 +142,7 @@ class AutoSchedule:
 		return False
 
 	def create_events(self, calendar_id):
-		d = datetime.datetime.now().date()
+		d = datetime.datetime.utcnow().date()
 		
 		day = int(input("Today's Day: "))
 		total_days = int(input("How many days: "))
@@ -171,8 +175,18 @@ class AutoSchedule:
 						
 						# Match current day with class in csv
 						if rows[a]["Day"] == str(day):
-							sDateTime = formatted_date + "T" + rows[a]["Start Time"] + "-04:00"
-							eDateTime = formatted_date + "T" + rows[a]["End Time"] + "-04:00"
+							start_raw = datetime.datetime.strptime("{} {}".format(formatted_date, 
+							rows[a]["Start Time"]), "%Y-%m-%d %H:%M:%S")
+							sDateTime = self.locale.localize(start_raw, is_dst=None)
+							sDateTime = sDateTime.astimezone(pytz.utc)
+							
+							end_raw = datetime.datetime.strptime("{} {}".format(formatted_date, 
+							rows[a]["End Time"]), "%Y-%m-%d %H:%M:%S")
+							eDateTime = self.locale.localize(end_raw, is_dst=None)
+							eDateTime = sDateTime.astimezone(pytz.utc)
+
+							sDateTime = "{}T{}z".format(sDateTime.strftime ("%Y-%m-%d"), sDateTime.strftime ("%H:%M:%S"))
+							eDateTime = "{}T{}z".format(eDateTime.strftime ("%Y-%m-%d"), eDateTime.strftime ("%H:%M:%S"))
 							
 							event = {
 										'summary': rows[a]["Class"],
